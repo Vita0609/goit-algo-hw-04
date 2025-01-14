@@ -1,41 +1,48 @@
-import sys
 import os
-from pathlib import Path
+import sys
 from colorama import Fore, init
 
 # Ініціалізація colorama
 init(autoreset=True)
 
-def print_directory_structure(directory, indent=0):
-    """Функція для рекурсивного виведення структури директорії з кольоровим оформленням"""
+def print_directory_structure(path, indent=0):
+    
     try:
-        # Перевірка, чи є це директорією
-        p = Path(directory)
-        if not p.is_dir():
-            print(Fore.RED + f"Помилка: '{directory}' не є директорією або не існує.")
-            return
-
-        # Перебір вмісту директорії
-        for entry in p.iterdir():
-            # Формуємо відступи для кращого вигляду
-            space = ' ' * indent
-            if entry.is_dir():
-                print(Fore.BLUE + space + f"📂 {entry.name}")  # Для директорій блакитний
-                # Рекурсивно викликаємо функцію для підкаталогів
-                print_directory_structure(entry, indent + 4)
-            else:
-                print(Fore.GREEN + space + f"📜 {entry.name}")  # Для файлів зелений
+        # Перевіряємо, чи це директорія
+        if os.path.isdir(path):
+            # Отримуємо список файлів та піддиректорій
+            items = os.listdir(path)
+            
+            for item in items:
+                # Повний шлях до елементу
+                full_item_path = os.path.join(path, item)
+                
+                if os.path.isdir(full_item_path):
+                    # Виводимо директорію зеленим кольором
+                    print("  " * indent + Fore.GREEN + f"📂 {item}")
+                    # Рекурсивний виклик для піддиректорії
+                    print_directory_structure(full_item_path, indent + 1)
+                elif os.path.isfile(full_item_path):
+                    # Виводимо файл синім кольором
+                    print("  " * indent + Fore.BLUE + f"📜 {item}")
+        else:
+            print(Fore.RED + "Помилка: вказаний шлях не є директорією.")
+            sys.exit(1)
     except Exception as e:
-        print(Fore.RED + f"Помилка: {e}")
-
-def main():
-    """Основна функція для отримання шляху з аргументів командного рядка та виклику виведення"""
-    if len(sys.argv) != 2:
-        print(Fore.YELLOW + "Будь ласка, вкажіть шлях до директорії як аргумент.")
+        print(Fore.RED + f"Сталася помилка: {e}")
         sys.exit(1)
 
-    directory = sys.argv[1]
-    print_directory_structure(directory)
+def main():
+    # Перевірка наявності аргументів командного рядка
+    if len(sys.argv) < 2:
+        print(Fore.RED + "Будь ласка, вкажіть шлях до директорії як аргумент.")
+        sys.exit(1)
+    
+    # Отримуємо шлях до директорії
+    directory_path = sys.argv[1]
+    
+    # Викликаємо функцію для виведення структури директорії
+    print_directory_structure(directory_path)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
